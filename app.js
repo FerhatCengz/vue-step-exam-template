@@ -1,8 +1,13 @@
 const app = Vue.createApp({
   data() {
     return {
+      countDown: {
+        minutes: 30,
+        seconds: 0,
+      },
       currentQuestion: 0,
       userAnswers: [],
+
       questions: [
         {
           id: 12,
@@ -24,7 +29,7 @@ const app = Vue.createApp({
         },
         {
           id: 42,
-          text: "Hangi gezegen Güneş Sistemi'ndeki <i>en büyük gezegen</i>'dir?",
+          text: "Hangi gezegen Güneş Sistemi'ndeki <b>en büyük gezegen</b>'dir?",
           choices: ["Mars", "Jüpiter", "Satürn", "Venüs"],
           correctAnswer: "B",
         },
@@ -121,6 +126,37 @@ const app = Vue.createApp({
     };
   },
   methods: {
+    startCountdown() {
+      const interval = setInterval(() => {
+        if (this.countDown.minutes === 0 && this.countDown.seconds === 0) {
+          clearInterval(interval);
+          this.showAlert();
+        } else {
+          if (this.countDown.seconds > 0) {
+            this.countDown.seconds--;
+          } else {
+            this.countDown.minutes--;
+            this.countDown.seconds = 59;
+          }
+        }
+      }, 1000);
+    },
+    showAlert() {
+      window.location.reload();
+    },
+
+    /**
+     * Loading page'i true => açar ,  false => kapatır
+     * @param {Bool} commandBoolenValue  - Bool değer
+     */
+    preloaderControl(commandBoolenValue = false) {
+      if (commandBoolenValue) {
+        $("#preloader").delay(350).fadeIn();
+      } else {
+        $("#preloader").delay(350).fadeOut("slow");
+      }
+    },
+
     finshExam() {
       let vm = this;
       let html = "";
@@ -137,11 +173,9 @@ const app = Vue.createApp({
       return htmlString.replace(/<\/?[^>]+(>|$)/g, "").trim();
     },
     nextQuestion() {
-      document.querySelector(".paginationjs-next.J-paginationjs-next").click();
       this.currentQuestion++;
     },
     prevQuestion() {
-      document.querySelector(".paginationjs-prev.J-paginationjs-previous").click();
       this.currentQuestion--;
     },
   },
@@ -167,21 +201,9 @@ const app = Vue.createApp({
     },
   },
 
-  // Pagetion.js freamworkünü kullandım. amacım responsive bir "pagetion" işlemi yapmaktı bunu ise bunun ile sağladım.
   mounted() {
-    let vm = this;
-    const paginationElement = document.getElementById("pagination-container");
-    const options = {
-      dataSource: this.questions,
-      pageSize: 1,
-      pageNumber: 1,
-      // showPrevious: false,
-      // showNext: false,
-      callback: function (data, pagination) {
-        vm.currentQuestion = pagination.pageNumber - 1;
-      },
-    };
-    $(paginationElement).pagination(options);
+    this.preloaderControl();
+    this.startCountdown();
   },
 });
 
